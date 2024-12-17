@@ -1,45 +1,44 @@
-{% set version = "1.8.0" %}
+{% set version = "2.2.1" %}
 
 package:
   name: libgsasl
   version: "{{ version }}"
 
 source:
-  fn: libgsasl-{{ version }}.tar.gz
-  url: ftp://ftp.gnu.org/gnu/gsasl/libgsasl-{{ version }}.tar.gz
-  md5: 5dbdf859f6e60e05813370e2b193b92b
+  url: https://ftp.gnu.org/gnu/gsasl/gsasl-{{ version }}.tar.gz
+  sha256: d45b562e13bd13b9fc20b372f4b53269740cf6279f836f09ce11b9d32bcee075
 
 build:
-  number: 2
+  number: 0
   # This package is a dependency of libhdfs3, which is primarily used with HDFS on Linux.
   skip: True  # [win]
+  run_exports:
+    - {{ pin_subpackage("libgsasl", max_pin="x") }}
 
 requirements:
   build:
-    - toolchain
-    - libgcrypt
-    - libntlm
-    - krb5
-
-  run:
+    - {{ compiler("c") }}
+    - {{ stdlib("c") }}
+    - make
+  host:
     - libntlm
     - libgcrypt
     - krb5
 
 test:
   commands:
-    - test -f $PREFIX/include/gsasl-compat.h
     - test -f $PREFIX/include/gsasl-mech.h
     - test -f $PREFIX/include/gsasl.h
-    - test -f $PREFIX/lib/libgsasl.a
-    - test -f $PREFIX/lib/libgsasl.la
-    - test -f $PREFIX/lib/libgsasl.so         # [linux]
-    - test -f $PREFIX/lib/libgsasl.so.7       # [linux]
-    - test -f $PREFIX/lib/libgsasl.so.7.9.6   # [linux]
+    - test ! -f $PREFIX/lib/libgsasl.a
+    - test ! -f $PREFIX/lib/libgsasl.la
+    - test -f $PREFIX/lib/libgsasl{{ SHLIB_EXT }}
+    - test -f $PREFIX/lib/libgsasl.so.18       # [linux]
+    - test -f $PREFIX/lib/libgsasl.so.18.0.0   # [linux]
 
 about:
   home: http://www.gnu.org/software/gsasl/
-  license: LGPL-2.1
+  license: LGPL-2.1-or-later
+  license_file: COPYING.LESSER
   summary: Implementation of the Simple Authentication and Security Layer framework
 
 extra:
